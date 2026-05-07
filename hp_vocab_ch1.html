@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HP Vocab">
+<title>Harry Potter Vocab – Book 1, Ch.1</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0a0f1e;
+    --card: #111827;
+    --accent: #fbbf24;
+    --accent2: #f97316;
+    --text: #f0f4ff;
+    --muted: #6b7a9a;
+    --border: #1e2d45;
+    --correct: #10b981;
+    --wrong: #ef4444;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px 16px 60px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 10%, #1a2545 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, #1a1030 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 20px; }
+  .header-label { font-size: 11px; color: var(--accent2); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 4px; }
+  .header-title { font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: -0.5px; }
+  .header-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* MODE TABS */
+  .tabs { display: inline-flex; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-top: 14px; gap: 4px; }
+  .tab { background: transparent; color: var(--muted); border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; font-weight: 400; }
+  .tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a0f1e; font-weight: 800; }
+
+  /* CATEGORY PILLS */
+  .cat-scroll { overflow-x: auto; margin-bottom: 14px; padding-bottom: 4px; }
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-pills { display: flex; gap: 6px; width: max-content; }
+  .cat-pill { border-radius: 99px; padding: 5px 13px; font-size: 11px; font-family: Georgia, serif; cursor: pointer; border: 1.5px solid var(--border); background: transparent; color: var(--muted); white-space: nowrap; transition: all 0.2s; font-weight: 400; }
+  .cat-pill.active { font-weight: 700; }
+
+  /* PROGRESS BAR */
+  .prog-wrap { width: 100%; background: var(--border); border-radius: 99px; height: 6px; margin: 8px 0 16px; }
+  .prog-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s ease; }
+
+  /* FLASH CARD */
+  .card {
+    background: linear-gradient(145deg, var(--card), #0d1626);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    padding: 26px 22px;
+    min-height: 290px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .card.flipped { box-shadow: 0 0 30px rgba(251,191,36,0.15); }
+  .card-top { display: flex; justify-content: space-between; align-items: center; }
+  .badge { border-radius: 99px; padding: 2px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .flip-hint { font-size: 12px; color: var(--muted); }
+  .card-front { text-align: center; padding: 16px 0; }
+  .card-emoji { font-size: 46px; margin-bottom: 10px; }
+  .card-word { font-size: 32px; font-weight: 900; font-family: Georgia, serif; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .card-pron { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 14px; }
+  .card-simple { font-size: 16px; color: var(--text); line-height: 1.7; max-width: 340px; margin: 0 auto; }
+  .card-back { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+  .back-block { border-radius: 0 8px 8px 0; padding: 10px 14px; }
+  .back-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; font-weight: 700; }
+  .back-text { font-size: 14px; color: var(--text); line-height: 1.7; }
+  .back-text.italic { font-style: italic; }
+
+  /* NAV BUTTONS */
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .nav-count { color: var(--muted); font-size: 13px; }
+  .btn { border-radius: 12px; padding: 10px 20px; font-size: 14px; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); }
+  .btn-prev { background: var(--card); color: var(--text); }
+  .btn-prev:disabled { background: transparent; color: var(--border); cursor: not-allowed; }
+  .btn-next { border: none; font-weight: 700; }
+  .btn-next:disabled { background: transparent !important; color: var(--border); cursor: not-allowed; border: 1.5px solid var(--border); }
+
+  /* BROWSE */
+  .browse-list { display: flex; flex-direction: column; gap: 10px; }
+  .browse-count { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .browse-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+  .browse-emoji { font-size: 26px; flex-shrink: 0; }
+  .browse-word { font-size: 17px; font-weight: 800; font-family: Georgia, serif; }
+  .browse-pron { font-size: 11px; color: var(--muted); font-style: italic; margin-left: 6px; }
+  .browse-simple { font-size: 13px; color: var(--text); line-height: 1.6; margin-top: 2px; }
+
+  /* QUIZ */
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-label { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  .quiz-word { font-size: 30px; font-weight: 900; font-family: Georgia, serif; }
+  .quiz-pron { font-size: 12px; color: var(--muted); font-style: italic; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 10px; }
+  .quiz-opt { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 13px 16px; color: var(--text); font-size: 14px; text-align: left; cursor: pointer; font-family: Georgia, serif; line-height: 1.6; transition: all 0.25s; width: 100%; }
+  .quiz-opt.correct { background: #0d2e1e; border-color: var(--correct); color: var(--correct); }
+  .quiz-opt.wrong { background: #2e0d0d; border-color: var(--wrong); color: var(--wrong); }
+  .quiz-opt.dim { color: var(--muted); }
+  .btn-back { margin-top: 18px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; font-size: 12px; cursor: pointer; font-family: Georgia, serif; }
+
+  /* DONE SCREEN */
+  .done { text-align: center; padding: 32px 0; }
+  .done-icon { font-size: 58px; margin-bottom: 14px; }
+  .done-title { font-size: 26px; font-weight: 900; color: var(--accent); font-family: Georgia, serif; margin-bottom: 6px; }
+  .done-score { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .done-msg { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a0f1e; border: none; border-radius: 14px; padding: 12px 30px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: Georgia, serif; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-label">📚 Vocabulary Guide</div>
+    <div class="header-title">Harry Potter</div>
+    <div class="header-sub" id="word-count">Book 1 · Chapter 1</div>
+    <div class="tabs">
+      <button class="tab active" onclick="setMode('cards')">✨ Flashcards</button>
+      <button class="tab" onclick="setMode('browse')">📋 Browse</button>
+      <button class="tab" onclick="setMode('quiz')">🧠 Quiz</button>
+    </div>
+  </div>
+
+  <!-- FLASHCARD MODE -->
+  <div id="mode-cards">
+    <div class="cat-scroll"><div class="cat-pills" id="cat-pills-cards"></div></div>
+    <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="card" id="flash-card" onclick="flipCard()">
+      <div class="card-top">
+        <span class="badge" id="card-badge"></span>
+        <span class="flip-hint" id="flip-hint">Tap to flip ✨</span>
+      </div>
+      <div class="card-front" id="card-front">
+        <div class="card-emoji" id="card-emoji"></div>
+        <div class="card-word" id="card-word"></div>
+        <div class="card-pron" id="card-pron"></div>
+        <div class="card-simple" id="card-simple"></div>
+      </div>
+      <div class="card-back hidden" id="card-back">
+        <div class="back-block" id="back-block-1">
+          <div class="back-label" id="back-label-1">📖 In the Book</div>
+          <div class="back-text italic" id="card-example"></div>
+        </div>
+        <div class="back-block" style="background: rgba(255,255,255,0.04); border-radius: 10px;">
+          <div class="back-label" style="color: var(--accent2);">💡 Why Rowling Used This</div>
+          <div class="back-text" id="card-context"></div>
+        </div>
+      </div>
+      <div></div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-prev" id="btn-prev" onclick="navigate(-1)">← Prev</button>
+      <span class="nav-count" id="nav-count"></span>
+      <button class="btn btn-next" id="btn-next" onclick="navigate(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- BROWSE MODE -->
+  <div id="mode-browse" class="hidden">
+    <div class="cat-scroll"><div class="cat-pills" id="cat-pills-browse"></div></div>
+    <div class="browse-count" id="browse-count"></div>
+    <div class="browse-list" id="browse-list"></div>
+  </div>
+
+  <!-- QUIZ MODE -->
+  <div id="mode-quiz" class="hidden">
+    <div id="quiz-screen">
+      <div class="prog-wrap"><div class="prog-bar" id="quiz-prog" style="width:0%"></div></div>
+      <div class="quiz-q">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span class="badge" id="quiz-badge"></span>
+          <span style="color:var(--muted);font-size:13px;" id="quiz-num"></span>
+        </div>
+        <div class="quiz-label">What does this word mean?</div>
+        <div class="quiz-word" id="quiz-word"></div>
+        <div class="quiz-pron" id="quiz-pron"></div>
+      </div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+      <button class="btn-back" onclick="setMode('cards')">← Back to Flashcards</button>
+    </div>
+    <div id="quiz-done" class="done hidden">
+      <div class="done-icon" id="done-icon"></div>
+      <div class="done-title">Quiz Complete!</div>
+      <div class="done-score" id="done-score"></div>
+      <div class="done-msg" id="done-msg"></div>
+      <button class="btn-primary" onclick="setMode('cards')">Back to Flashcards</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT_COLORS = {
+  "Nouns & People": "#e879f9",
+  "Nouns & Things": "#22d3ee",
+  "Verbs": "#4ade80",
+  "Describing People": "#818cf8",
+  "Feelings & Reactions": "#f472b6",
+  "Actions & Movement": "#34d399",
+  "Places & Atmosphere": "#60a5fa",
+  "Rowling\'s Favourites": "#fbbf24",
+  "Speech & Sound": "#fb923c",
+  "Descriptive Classics": "#a78bfa",
+};
+
+function catColor(cat) { return CAT_COLORS[cat] || "#fbbf24"; }
+
+const ALL_WORDS = [{"word": "Dursleys", "category": "Nouns & People", "pronunciation": "DERZ-leez", "simple": "Harry's aunt, uncle, and cousin — his only living relatives, who treat him terribly.", "example": "Mr. and Mrs. Dursley of number four, Privet Drive, were proud to say they were perfectly normal.", "context": "Rowling opens the entire series with this family name. Everything about it sounds dull and heavy — like a door slamming shut.", "emoji": "🏠"}, {"word": "Muggle", "category": "Nouns & People", "pronunciation": "MUG-ul", "simple": "A person with no magical ability at all — a completely ordinary human.", "example": "The Dursleys were the most un-magical Muggles you could find.", "context": "Rowling invented this word. Some think it comes from 'mug' — old British slang for a gullible person. Very fitting for the Dursleys!", "emoji": "🙋"}, {"word": "Witch", "category": "Nouns & People", "pronunciation": "WICH", "simple": "A woman who has magical powers and can cast spells.", "example": "A witch in emerald-green robes stood talking excitedly on the corner.", "context": "In Harry Potter, 'witch' is a perfectly normal job title — not an insult. Female magic users are witches; male are wizards.", "emoji": "🧙‍♀️"}, {"word": "Wizard", "category": "Nouns & People", "pronunciation": "WIZ-erd", "simple": "A man with magical powers who can cast spells and do impossible things.", "example": "Strange wizards kept appearing all over the country that day.", "context": "Wizards and witches are everywhere in Chapter 1 — but only Vernon notices how odd they look in the Muggle world.", "emoji": "🧙"}, {"word": "Animagus", "category": "Nouns & People", "pronunciation": "AN-ih-MAY-gus", "simple": "A wizard who has trained themselves to transform into an animal at will.", "example": "Professor McGonagall was an Animagus — she could turn into a tabby cat.", "context": "This is a rare skill even in the wizard world. McGonagall's cat form is dignified, just like her human form.", "emoji": "🐱"}, {"word": "Hagrid", "category": "Nouns & People", "pronunciation": "HAG-rid", "simple": "A half-giant who is gamekeeper at Hogwarts and one of Harry's closest friends.", "example": "Hagrid arrived on a roaring motorcycle, carrying baby Harry wrapped in blankets.", "context": "Rowling named him 'Hagrid' from an old English dialect word meaning 'haggard' or 'hung-over.' Even his name feels big and rumpled.", "emoji": "🏔️"}, {"word": "Dumbledore", "category": "Nouns & People", "pronunciation": "DUM-bul-dor", "simple": "The greatest wizard of the age, headmaster of Hogwarts — wise, ancient, and oddly cheerful.", "example": "Dumbledore appeared on Privet Drive wearing long robes, a tall hat, and half-moon spectacles.", "context": "Rowling said 'Dumbledore' is an old English word for bumblebee. She pictured him wandering the halls humming to himself. 🐝", "emoji": "⚡"}, {"word": "McGonagall", "category": "Nouns & People", "pronunciation": "muh-GON-uh-gul", "simple": "A strict but fair witch and professor at Hogwarts — Dumbledore's trusted colleague.", "example": "McGonagall had been watching Privet Drive all day as a cat.", "context": "Named after a famously bad Scottish poet. Rowling liked the sound — strong and a little intimidating.", "emoji": "🎓"}, {"word": "Voldemort", "category": "Nouns & People", "pronunciation": "VOL-duh-mor", "simple": "The most powerful and feared dark wizard of all time — Harry's nemesis.", "example": "People whispered 'You-Know-Who' because they were too afraid to say Voldemort's name.", "context": "From French: 'vol de mort' means 'flight from death' or 'theft of death.' A name designed to terrify. The 't' is silent, by the way!", "emoji": "💀"}, {"word": "Privet Drive", "category": "Nouns & People", "pronunciation": "PRIV-it DRYV", "simple": "The street where the Dursleys live — the most ordinary, boring street imaginable.", "example": "Number four, Privet Drive had neat lawns, clean cars, and absolutely no magic.", "context": "A privet is a plain hedge plant used in English gardens. The name screams 'nothing interesting ever happens here' — until now.", "emoji": "🌿"}, {"word": "Sorcerer", "category": "Nouns & People", "pronunciation": "SOR-ser-er", "simple": "Someone who practises magic, especially dark or mysterious magic — another word for a powerful wizard.", "example": "The book is called Harry Potter and the Sorcerer's Stone in America.", "context": "The British title uses 'Philosopher's Stone.' A sorcerer sounds more dramatic and dangerous than a philosopher!", "emoji": "🔮"}, {"word": "Cloak", "category": "Nouns & Things", "pronunciation": "KLOHK", "simple": "A long, loose, sleeveless cape that hangs from the shoulders — like a wizard's robe.", "example": "People in cloaks of every colour were appearing all over the country.", "context": "Cloaks in Harry Potter signal 'wizard.' Normal people wear coats. If someone's in a cloak, they're from the magical world.", "emoji": "🧥"}, {"word": "Motorcycle", "category": "Nouns & Things", "pronunciation": "MOH-ter-sy-kul", "simple": "A two-wheeled motor vehicle — but Hagrid's can fly through the sky.", "example": "Hagrid arrived at Privet Drive on a roaring flying motorcycle.", "context": "The motorcycle originally belonged to Sirius Black. A flying motorcycle is the most Hagrid way to travel possible.", "emoji": "🏍️"}, {"word": "Spectacles", "category": "Nouns & Things", "pronunciation": "SPEK-tuh-kulz", "simple": "Another word for glasses — the frames with lenses you wear on your face to see better.", "example": "Dumbledore had half-moon spectacles perched on his long nose.", "context": "Rowling uses 'spectacles' instead of 'glasses' to make Dumbledore sound old-fashioned and distinguished.", "emoji": "👓"}, {"word": "Scar", "category": "Nouns & Things", "pronunciation": "SKAR", "simple": "A mark left on skin after a wound has healed — Harry's is lightning-bolt shaped on his forehead.", "example": "Harry had a lightning-bolt scar on his forehead — the only sign of what had happened the night his parents died.", "context": "Harry's scar is one of the most famous scars in all of fiction. It's not just a mark — it's a connection to Voldemort himself.", "emoji": "⚡"}, {"word": "Envelope", "category": "Nouns & Things", "pronunciation": "EN-vuh-lope", "simple": "A flat paper packet that you seal a letter inside before sending it.", "example": "Dumbledore left a letter in an envelope on top of baby Harry.", "context": "Inside that envelope is the explanation of Harry's whole life. One small envelope, enormous consequences.", "emoji": "✉️"}, {"word": "Tabby", "category": "Nouns & Things", "pronunciation": "TAB-ee", "simple": "A type of cat with striped grey or brown fur — the most common domestic cat pattern.", "example": "A tabby cat was sitting very still on the Dursleys' garden wall.", "context": "The tabby is McGonagall in disguise. She's been watching Privet Drive all day, completely motionless — very McGonagall.", "emoji": "🐈"}, {"word": "Owl", "category": "Nouns & Things", "pronunciation": "OWL", "simple": "A bird of prey with big round eyes that usually hunts at night — and delivers wizard mail.", "example": "Owls were swooping past in broad daylight, which Muggles found very strange.", "context": "In the wizard world, owls are the postal service. No email, no texting — just owls. Chapter 1 has owls flying in the daytime, which is the first sign something magical is happening.", "emoji": "🦉"}, {"word": "Robes", "category": "Nouns & Things", "pronunciation": "ROHBZ", "simple": "Long, flowing garments that cover the whole body — like a fancy gown or wizard dress.", "example": "The witch was wearing emerald-green robes, which looked very odd on a normal city street.", "context": "Wizards wear robes instead of regular clothes. They don't always understand Muggle fashion — some accidentally put them on backward.", "emoji": "👘"}, {"word": "Rubble", "category": "Nouns & Things", "pronunciation": "RUB-ul", "simple": "Broken pieces of brick, stone, or building left after something has been destroyed.", "example": "The Potters' house in Godric's Hollow was reduced to rubble by Voldemort.", "context": "We don't see the rubble in Chapter 1, but it's referenced — the destroyed house is where Harry's story truly begins.", "emoji": "🧱"}, {"word": "Locket", "category": "Nouns & Things", "pronunciation": "LOK-it", "simple": "A small decorative case worn on a necklace — often opens up to hold a tiny photo.", "example": "Some wizards wore strange lockets and amulets alongside their robes.", "context": "Lockets become VERY important later in the series. In Chapter 1 they're just a detail — but Rowling plants these seeds early.", "emoji": "📿"}, {"word": "Sorcery", "category": "Nouns & Things", "pronunciation": "SOR-ser-ee", "simple": "The practice of magic — especially magic that involves mysterious or dark powers.", "example": "The Dursleys wanted nothing to do with sorcery or anything unnatural.", "context": "For the Dursleys, all magic is sorcery — something dangerous and embarrassing to be avoided at all costs.", "emoji": "✨"}, {"word": "Prophecy", "category": "Nouns & Things", "pronunciation": "PROF-eh-see", "simple": "A prediction about the future — usually delivered by someone with the power to see what's coming.", "example": "A prophecy foretold that Harry would have power the Dark Lord knows not.", "context": "The prophecy is the engine driving the whole series, even though it's not mentioned directly in Chapter 1. Everything happening IS the prophecy beginning.", "emoji": "🔭"}, {"word": "Grunnings", "category": "Nouns & Things", "pronunciation": "GRUN-ingz", "simple": "The name of Vernon Dursley's company — they make drill bits.", "example": "Mr. Dursley was the director of a firm called Grunnings, which made drills.", "context": "Even the company name sounds dull and grinding. Rowling is having fun — 'grunning' sounds like grunting, which fits Vernon perfectly.", "emoji": "🔩"}, {"word": "Director", "category": "Nouns & Things", "pronunciation": "dih-REK-ter", "simple": "A senior leader of a company — one of the top bosses who makes big decisions.", "example": "Vernon was the director of Grunnings — he was proud of this, and liked people to know it.", "context": "Vernon's job title matters to him because it makes him feel important and respectable. Exactly what someone obsessed with 'normality' would care about.", "emoji": "💼"}, {"word": "Beefy", "category": "Describing People", "pronunciation": "BEE-fee", "simple": "Big, heavy, and muscular — like someone who eats too much and lifts things.", "example": "Uncle Vernon was a big, beefy man.", "context": "Rowling uses 'beefy' to instantly paint Vernon as someone physically intimidating but also kind of ridiculous.", "emoji": "💪"}, {"word": "Gruff", "category": "Describing People", "pronunciation": "GRUFF", "simple": "Rough and unfriendly in the way someone talks — short, rude, low-voiced.", "example": "Uncle Vernon spoke in a gruff voice whenever he didn't like something.", "context": "It's a great word for Vernon. You can almost HEAR how annoyed he sounds.", "emoji": "😤"}, {"word": "Ruddy", "category": "Describing People", "pronunciation": "RUH-dee", "simple": "Having a red or pink face — usually from being outside a lot or getting angry.", "example": "Vernon's face turned ruddy red as his temper rose.", "context": "Think of someone going so red with anger their face matches a tomato. That's Vernon.", "emoji": "🍅"}, {"word": "Bristly", "category": "Describing People", "pronunciation": "BRIS-lee", "simple": "Short, stiff, and prickly — like the fur on a brush or an unshaved beard.", "example": "Vernon had a large, bristly mustache.", "context": "The mustache is basically its own character. Rowling mentions it to make Vernon seem prickly in personality too.", "emoji": "🥸"}, {"word": "Dumpy", "category": "Describing People", "pronunciation": "DUM-pee", "simple": "Short and wide or chubby — not tall, kind of round-shaped.", "example": "Aunt Petunia was thin and blonde; most of the neighbors were more dumpy.", "context": "Rowling uses body descriptions to quickly show who is who without spending pages on it.", "emoji": "🫧"}, {"word": "Scrawny", "category": "Describing People", "pronunciation": "SKRAW-nee", "simple": "Very thin and bony — not in a healthy way, more like underfed.", "example": "Harry was small and scrawny for his age.", "context": "Harry's scrawniness tells us the Dursleys haven't been taking great care of him. One word, big message.", "emoji": "🦴"}, {"word": "Sallow", "category": "Describing People", "pronunciation": "SAL-oh", "simple": "Skin that looks yellowish or pale and unhealthy — not glowing, more like tired.", "example": "Some of the witches had sallow, tired faces.", "context": "Opposite of 'rosy cheeks.' Sallow skin suggests someone who doesn't get much sunlight or rest.", "emoji": "😶"}, {"word": "Stout", "category": "Describing People", "pronunciation": "STOWT", "simple": "Solidly built and somewhat fat — sturdy like a tree trunk.", "example": "Several stout witches talked excitedly on the street corner.", "context": "Rowling loves giving brief physical sketches so you instantly picture a crowd of varied people.", "emoji": "🪵"}, {"word": "Appear", "category": "Verbs", "pronunciation": "ah-PEER", "simple": "To suddenly show up somewhere — especially when it seems like out of nowhere.", "example": "Strange people in cloaks kept appearing all over the country.", "context": "Wizards can Apparate — teleport instantly. So 'appearing' is very literal for them. One second they're not there, the next — poof!", "emoji": "💨"}, {"word": "Vanish", "category": "Verbs", "pronunciation": "VAN-ish", "simple": "To disappear completely and suddenly — gone without a trace.", "example": "The cat on the wall seemed to vanish the moment Vernon looked away.", "context": "The opposite of 'appear.' Both words are extra powerful in a world full of magic and transformation.", "emoji": "🫥"}, {"word": "Whisper", "category": "Verbs", "pronunciation": "WISS-per", "simple": "To speak very softly so only the person right next to you can hear.", "example": "Wizards on the street were whispering 'You-Know-Who' and 'the Potters' to each other.", "context": "Voldemort's name was so feared that people wouldn't even say it at a normal volume. Whispering was the safe choice.", "emoji": "🤫"}, {"word": "Shudder", "category": "Verbs", "pronunciation": "SHUD-er", "simple": "To shake quickly with fear, cold, or disgust — your whole body trembling for a second.", "example": "Vernon shuddered when he thought about what the wizards might be celebrating.", "context": "A shudder is involuntary — your body reacts before your brain does. It shows fear you can't control.", "emoji": "😬"}, {"word": "Mutter", "category": "Verbs", "pronunciation": "MUT-er", "simple": "To speak quietly under your breath — usually complaining or saying something you don't want others to hear.", "example": "Vernon muttered darkly to himself on the drive home.", "context": "Vernon mutters a LOT. It's his way of being angry without fully committing to a fight.", "emoji": "😤"}, {"word": "Stride", "category": "Verbs", "pronunciation": "STRYD", "simple": "To walk with long, confident, purposeful steps — like you own the place.", "example": "Dumbledore strode down Privet Drive as though he walked there every day.", "context": "You can tell a lot about a character by how they walk. Dumbledore strides. Vernon hurries. Harry later learns to stride too.", "emoji": "🚶"}, {"word": "Scowl", "category": "Verbs", "pronunciation": "SKOWL", "simple": "To frown deeply with an angry or disapproving look on your face.", "example": "Vernon scowled at the news report, not wanting to hear anything about owls or Potter.", "context": "Scowling is Vernon's second most common expression, right after glowering. He does a lot of face exercises in Chapter 1.", "emoji": "😠"}, {"word": "Clutch", "category": "Verbs", "pronunciation": "KLUCH", "simple": "To grab or hold something very tightly — usually because you're scared of losing it.", "example": "Petunia clutched her handbag tightly when she saw the people in robes.", "context": "Clutching something is a sign of anxiety. Your hands grip harder when your mind is nervous.", "emoji": "✊"}, {"word": "Linger", "category": "Verbs", "pronunciation": "LING-er", "simple": "To stay somewhere longer than expected — like something is keeping you there.", "example": "The tabby cat lingered on the garden wall all day, never moving.", "context": "McGonagall lingered because she was keeping watch. Her patience is extraordinary — she sat there for hours.", "emoji": "⏳"}, {"word": "Ponder", "category": "Verbs", "pronunciation": "PON-der", "simple": "To think carefully and slowly about something — really turning it over in your mind.", "example": "Vernon pondered whether to mention the strange day to his wife.", "context": "Pondering is deeper than just thinking. It's the kind of thinking you do when something is really bothering you.", "emoji": "🤔"}, {"word": "Thrust", "category": "Verbs", "pronunciation": "THRUST", "simple": "To push something forward suddenly and forcefully.", "example": "Hagrid thrust the bundle of blankets containing baby Harry into Dumbledore's arms.", "context": "Thrust is a sudden, urgent action — it shows Hagrid's emotion. He doesn't gently hand over Harry. He thrusts him forward.", "emoji": "👐"}, {"word": "Conceal", "category": "Verbs", "pronunciation": "kun-SEEL", "simple": "To hide something carefully so it can't be seen or discovered.", "example": "Wizards tried to conceal their celebrations from the Muggle world.", "context": "The whole wizarding world is concealed from Muggles. Chapter 1 is about that concealment starting to crack.", "emoji": "🫣"}, {"word": "Tremble", "category": "Verbs", "pronunciation": "TREM-bul", "simple": "To shake in small quick movements — from fear, cold, or powerful emotion.", "example": "People trembled even to say Voldemort's name out loud.", "context": "Trembling is physical fear. When a name makes your body shake, you know the fear is very real.", "emoji": "😰"}, {"word": "Deduce", "category": "Verbs", "pronunciation": "deh-DYOOS", "simple": "To figure something out using logic and clues — like a detective piecing together a puzzle.", "example": "Dumbledore deduced exactly what had happened the night before from the clues available.", "context": "Dumbledore doesn't just guess — he deduces. It's one of the things that makes him seem almost all-knowing.", "emoji": "🔍"}, {"word": "Glint", "category": "Verbs", "pronunciation": "GLINT", "simple": "To flash with a small bright light — like sunlight catching something shiny for just a moment.", "example": "Dumbledore's half-moon spectacles glinted in the lamplight.", "context": "Glinting is a subtle detail — Rowling uses it to make Dumbledore feel magical even when he's just standing still.", "emoji": "✨"}, {"word": "Swoop", "category": "Verbs", "pronunciation": "SWOOP", "simple": "To fly downward in a fast, smooth curve — like a hawk diving for its prey.", "example": "Owls swooped overhead even in bright daylight, carrying messages across the country.", "context": "Owls normally hunt at night. Seeing them swoop in daylight is one of the first signs the magical world is spilling over.", "emoji": "🦅"}, {"word": "Remark", "category": "Verbs", "pronunciation": "reh-MARK", "simple": "To say something as a casual comment — not making a big deal of it.", "example": "'I would have thought you'd be used to owls by now,' Dumbledore remarked.", "context": "Dumbledore remarks things in a light, calm way even when discussing very serious events. It's part of his unshakeable character.", "emoji": "💬"}, {"word": "Entrust", "category": "Verbs", "pronunciation": "en-TRUST", "simple": "To give someone an important responsibility — trusting them completely to handle something precious.", "example": "Dumbledore entrusted baby Harry to Hagrid to deliver safely to Privet Drive.", "context": "Entrusting is more than just giving. It says: I believe in you completely. Dumbledore's trust in Hagrid here is total.", "emoji": "🤝"}, {"word": "Protest", "category": "Verbs", "pronunciation": "proh-TEST", "simple": "To say strongly that you disagree or object to something.", "example": "McGonagall protested when Dumbledore revealed his plan to leave Harry with the Dursleys.", "context": "McGonagall is not easily overruled — but Dumbledore's reasons are always bigger than they first appear.", "emoji": "🙋"}, {"word": "Roar", "category": "Verbs", "pronunciation": "ROR", "simple": "To make a very loud, deep, powerful sound — like a lion or a massive engine.", "example": "Hagrid's motorcycle roared out of the darkness and landed on Privet Drive.", "context": "The roar announces Hagrid before you even see him. It's a dramatic entrance that perfectly matches his enormous personality.", "emoji": "🦁"}, {"word": "Peer", "category": "Verbs", "pronunciation": "PEER", "simple": "To look very carefully at something — often squinting or leaning in to see better.", "example": "McGonagall peered over her spectacles at Dumbledore with sharp, questioning eyes.", "context": "Peering is a focused, intense look. McGonagall peers when she wants answers — and she usually gets them.", "emoji": "👀"}, {"word": "Celebrate", "category": "Verbs", "pronunciation": "SEL-eh-brayt", "simple": "To do something joyful to mark a special occasion — like cheering or having a party.", "example": "Wizards all over the country were celebrating — Voldemort had finally been defeated!", "context": "The whole wizarding world was celebrating, but they had to do it in secret. The party had to be hidden from Muggles.", "emoji": "🎉"}, {"word": "Surrender", "category": "Verbs", "pronunciation": "suh-REN-der", "simple": "To give up — to stop fighting and accept defeat.", "example": "Voldemort's attack on Harry backfired, forcing him to surrender his power.", "context": "Voldemort didn't surrender willingly — his attack on baby Harry rebounded and stripped him of his power. A stunning defeat.", "emoji": "🏳️"}, {"word": "Confirm", "category": "Verbs", "pronunciation": "kun-FIRM", "simple": "To say officially that something is definitely true — removing any remaining doubt.", "example": "Dumbledore confirmed that Voldemort had tried to kill Harry the previous night.", "context": "Confirming something makes it real and official. For the wizarding world, this night changed absolutely everything.", "emoji": "✅"}, {"word": "Exasperated", "category": "Feelings & Reactions", "pronunciation": "ex-AS-peh-ray-ted", "simple": "So frustrated you want to scream. Way past just annoyed.", "example": "Vernon was exasperated by all the strange things he kept seeing that day.", "context": "Vernon spends most of Chapter 1 feeling exasperated. It's basically his permanent mood.", "emoji": "🤯"}, {"word": "Uneasy", "category": "Feelings & Reactions", "pronunciation": "un-EE-zee", "simple": "A nervous, uncomfortable feeling — like something is wrong but you can't quite say what.", "example": "Vernon felt uneasy about the cat that had been staring at him all morning.", "context": "The cat is McGonagall! Vernon's instincts sense something is off, but he can't figure out what.", "emoji": "😟"}, {"word": "Smug", "category": "Feelings & Reactions", "pronunciation": "SMUG", "simple": "Looking overly pleased with yourself — like you think you're better than everyone else.", "example": "Dudley was always smug about getting whatever he wanted.", "context": "A smug expression is the opposite of humble. Picture someone grinning because they got the last cookie.", "emoji": "😏"}, {"word": "Flustered", "category": "Feelings & Reactions", "pronunciation": "FLUS-terd", "simple": "Confused and nervous at the same time — like when too many things happen at once.", "example": "Vernon grew flustered as strange people kept appearing throughout his day.", "context": "Poor Vernon! One strange thing might be fine. But by the tenth strange thing? Total flustered mess.", "emoji": "😵"}, {"word": "Grudgingly", "category": "Feelings & Reactions", "pronunciation": "GRUJ-ing-lee", "simple": "Doing something you really don't want to do — with obvious resentment.", "example": "Vernon grudgingly admitted that something strange was going on.", "context": "When someone does something grudgingly, you can tell they hate every second of it.", "emoji": "😒"}, {"word": "Bewildered", "category": "Feelings & Reactions", "pronunciation": "beh-WIL-derd", "simple": "Completely confused — like someone just explained something in a language you don't speak.", "example": "Vernon was bewildered by the robed strangers whispering about 'the Potters.'", "context": "Bewildered is stronger than confused. It's that feeling of your brain just going blank.", "emoji": "😵‍💫"}, {"word": "Rattled", "category": "Feelings & Reactions", "pronunciation": "RAT-uld", "simple": "Shaken up and nervous — like your confidence has been knocked loose.", "example": "Vernon was rattled after hearing the name 'Potter' whispered by strangers.", "context": "When you're rattled, you can't think straight. Vernon's whole day rattles him more and more.", "emoji": "😨"}, {"word": "Glowered", "category": "Actions & Movement", "pronunciation": "GLOW-erd", "simple": "Stared angrily at something — a very dark, threatening look.", "example": "Vernon glowered at the cat sitting on his wall.", "context": "A glower is angrier than a stare and more intense than a frown. Vernon basically has this as his default face.", "emoji": "😠"}, {"word": "Swooped", "category": "Actions & Movement", "pronunciation": "SWOOPT", "simple": "Moved fast and low — like a bird diving down from the sky.", "example": "An owl swooped past the car window as Vernon drove.", "context": "Owls swoop silently. This one is carrying magical news — foreshadowing Harry's world without saying it outright.", "emoji": "🦅"}, {"word": "Muttered", "category": "Actions & Movement", "pronunciation": "MUT-erd", "simple": "Spoke very quietly, almost under your breath — like you don't want to be heard.", "example": "The strangers muttered excitedly to each other in the streets.", "context": "Wizards can't shout 'Voldemort is gone!' in public. Muttering is the safe option.", "emoji": "🤫"}, {"word": "Strode", "category": "Actions & Movement", "pronunciation": "STROHD", "simple": "Walked with long, confident, purposeful steps.", "example": "Dumbledore strode down the street as if he owned it.", "context": "People who strode don't shuffle or wander — they walk like they know exactly where they're going and why.", "emoji": "🚶"}, {"word": "Hurried", "category": "Actions & Movement", "pronunciation": "HUR-eed", "simple": "Moved faster than normal because you're in a rush or worried.", "example": "Vernon hurried past the robed strangers without making eye contact.", "context": "Vernon keeps hurrying past things he doesn't want to deal with. Running away from reality, basically.", "emoji": "🏃"}, {"word": "Craned", "category": "Actions & Movement", "pronunciation": "KRAYND", "simple": "Stretched your neck forward or upward to see something better.", "example": "Vernon craned his neck to get another look at the cat on the wall.", "context": "You crane your neck at something that catches your eye but you don't want to fully stop and stare.", "emoji": "🦒"}, {"word": "Peered", "category": "Actions & Movement", "pronunciation": "PEERD", "simple": "Looked very carefully at something — squinting or leaning in.", "example": "Vernon peered around the corner at the people in cloaks.", "context": "Peering is sneaky looking. You peer when you want information but don't want anyone to notice you looking.", "emoji": "👀"}, {"word": "Bundled", "category": "Actions & Movement", "pronunciation": "BUN-duld", "simple": "Wrapped up tightly, or pushed/carried something in a clumsy bunch.", "example": "Hagrid bundled baby Harry carefully in blankets.", "context": "It's a warm, cozy word — which makes the sad scene of dropping Harry off feel a tiny bit gentler.", "emoji": "👶"}, {"word": "Dreary", "category": "Places & Atmosphere", "pronunciation": "DREER-ee", "simple": "Dull, grey, and depressing — the kind of day that makes you want to stay in bed.", "example": "It was a dreary Tuesday when everything strange began.", "context": "Rowling sets Chapter 1 on a very ordinary, dreary day to make the magical interruptions feel even more surprising.", "emoji": "🌧️"}, {"word": "Murky", "category": "Places & Atmosphere", "pronunciation": "MUR-kee", "simple": "Dark, cloudy, and hard to see through — like muddy water or a foggy night.", "example": "The night sky was murky and clouded over.", "context": "Murky skies often appear before something dramatic happens in stories — it sets a mysterious mood.", "emoji": "🌫️"}, {"word": "Crisp", "category": "Places & Atmosphere", "pronunciation": "KRISP", "simple": "Cool, clean, and fresh — used for air or weather that feels sharp and clear.", "example": "The night air was crisp as Dumbledore appeared on Privet Drive.", "context": "After a dreary day, crisp night air signals a shift — something important is about to happen.", "emoji": "🍂"}, {"word": "Hushed", "category": "Places & Atmosphere", "pronunciation": "HUSHT", "simple": "Very quiet — like everyone stopped talking at the same time.", "example": "The usually busy street was hushed and still.", "context": "Hushed silence in stories usually means something big just happened or is about to.", "emoji": "🤐"}, {"word": "Ordinary", "category": "Places & Atmosphere", "pronunciation": "OR-dih-nair-ee", "simple": "Normal, average, nothing special at all — the opposite of extraordinary.", "example": "The Dursleys were proud to be perfectly ordinary.", "context": "Rowling repeats 'ordinary' and 'normal' on purpose — the Dursleys are obsessed with fitting in.", "emoji": "🏘️"}, {"word": "Desolate", "category": "Places & Atmosphere", "pronunciation": "DES-oh-let", "simple": "Empty, lonely, and depressing — like a place no one visits anymore.", "example": "Privet Drive felt desolate at midnight with no one around.", "context": "Desolate and dreary are cousins — both make a place feel hollow and sad.", "emoji": "🏚️"}, {"word": "Peculiar", "category": "Rowling's Favourites", "pronunciation": "peh-KYOOL-ee-er", "simple": "Strange in a way that makes you stop and stare — not normal strange, WEIRD strange.", "example": "The Dursleys thought anything out of the ordinary was peculiar.", "context": "This is one of Rowling's favourite words. She uses it whenever someone notices something magical leaking into the normal world.", "emoji": "🤨"}, {"word": "Nonsense", "category": "Rowling's Favourites", "pronunciation": "NON-sense", "simple": "Something completely ridiculous that makes no logical sense.", "example": "Uncle Vernon dismissed talk of wizards as absolute nonsense.", "context": "Vernon says 'nonsense' like a shield — if he calls it nonsense, he doesn't have to think about it.", "emoji": "🙅"}, {"word": "Apparently", "category": "Rowling's Favourites", "pronunciation": "ah-PAIR-ent-lee", "simple": "Used when something seems to be true, but you're not 100% sure — or you heard it from someone else.", "example": "Apparently, Harry Potter had defeated You-Know-Who.", "context": "Rowling uses 'apparently' for rumours and gossip — perfect for a wizarding world where news spreads by word of mouth.", "emoji": "🗣️"}, {"word": "Precisely", "category": "Rowling's Favourites", "pronunciation": "preh-SISE-lee", "simple": "Exactly, with perfect accuracy — not roughly, but RIGHT.", "example": "Dumbledore arrived at precisely midnight.", "context": "Wizards are precise people. Magic requires exactness — the wrong word of a spell and something goes wrong!", "emoji": "🎯"}, {"word": "Extraordinary", "category": "Rowling's Favourites", "pronunciation": "ex-TROR-dih-nair-ee", "simple": "Way beyond ordinary — remarkable, amazing, hard to believe.", "example": "It was an extraordinary thing for an owl to fly in daylight.", "context": "Opposite of 'ordinary' — and Rowling uses both constantly to highlight how magical keeps crashing into boring.", "emoji": "⭐"}, {"word": "Grubby", "category": "Rowling's Favourites", "pronunciation": "GRUB-ee", "simple": "Dirty and grimy — not washed, a bit messy and worn out.", "example": "Harry wore grubby, oversized clothes that used to belong to Dudley.", "context": "Grubby clothes tell us Harry is neglected without Rowling ever having to say 'the Dursleys treated him badly.'", "emoji": "👕"}, {"word": "Snapped", "category": "Speech & Sound", "pronunciation": "SNAPT", "simple": "Said something sharply and rudely — like a whip crack with words.", "example": "'Don't ask questions!' Uncle Vernon snapped.", "context": "Snapping is angrier than just talking. It shows Vernon has zero patience.", "emoji": "😡"}, {"word": "Boomed", "category": "Speech & Sound", "pronunciation": "BOOMD", "simple": "Spoke in a very loud, deep, powerful voice — like thunder.", "example": "Hagrid's voice boomed across the quiet street.", "context": "Hagrid is enormous, so of course his voice booms. Everything about him is larger than life.", "emoji": "📢"}, {"word": "Murmured", "category": "Speech & Sound", "pronunciation": "MUR-merd", "simple": "Spoke softly and gently — quieter than normal talking, warm and low.", "example": "Dumbledore murmured to McGonagall as they stood in the dark street.", "context": "Murmuring feels intimate and careful — two people sharing something important quietly.", "emoji": "🗨️"}, {"word": "Hissed", "category": "Speech & Sound", "pronunciation": "HIST", "simple": "Spoke in a sharp, angry whisper — like a snake, or someone furious but trying to stay quiet.", "example": "'He'll be famous!' the wizard hissed excitedly.", "context": "Hissing mixes excitement with secrecy — loud feelings kept in a small quiet voice.", "emoji": "🐍"}, {"word": "Bellowed", "category": "Speech & Sound", "pronunciation": "BEL-ohd", "simple": "Shouted very loudly — like a bull roaring, way louder than a regular shout.", "example": "Hagrid bellowed when he was upset.", "context": "Only certain characters bellow — mostly big, emotional ones. Hagrid bellows. Dumbledore never would.", "emoji": "🐂"}, {"word": "Gloomy", "category": "Descriptive Classics", "pronunciation": "GLOOM-ee", "simple": "Dark and depressing — like a rainy day inside your feelings.", "example": "The cupboard under the stairs was gloomy and cramped.", "context": "Harry lives in a gloomy cupboard. Even the word feels like a small dark space.", "emoji": "🌑"}, {"word": "Cramped", "category": "Descriptive Classics", "pronunciation": "KRAMPT", "simple": "Too small and tight — not enough space to move comfortably.", "example": "Harry's cupboard was cramped with a tiny cot and some broken toys.", "context": "Cramped is physical discomfort. The cupboard is cramped; Harry's whole life with the Dursleys is cramped.", "emoji": "📦"}, {"word": "Immaculate", "category": "Descriptive Classics", "pronunciation": "ih-MAK-yoo-let", "simple": "Perfectly clean and tidy — not a single speck of dirt or anything out of place.", "example": "The Dursleys kept their home immaculate.", "context": "Immaculate homes often belong to people who care way too much about appearances. Hello, Dursleys.", "emoji": "✨"}, {"word": "Gleaming", "category": "Descriptive Classics", "pronunciation": "GLEEM-ing", "simple": "Shining brightly — clean and polished until it catches the light.", "example": "The Dursleys' car was gleaming in the driveway.", "context": "Gleaming things suggest someone puts a lot of effort into looking impressive from the outside.", "emoji": "💎"}, {"word": "Dishevelled", "category": "Descriptive Classics", "pronunciation": "dih-SHEV-uld", "simple": "Messy and untidy — hair all over the place, clothes rumpled.", "example": "The wizard in the purple cloak looked rather dishevelled and excited.", "context": "Wizards don't care much about looking tidy. They have bigger things to think about.", "emoji": "🤪"}, {"word": "Ancient", "category": "Descriptive Classics", "pronunciation": "AYN-shent", "simple": "Very, very old — from a long time ago, older than your grandparents' grandparents.", "example": "Dumbledore wore ancient, sweeping robes.", "context": "Ancient things in fantasy carry history and power. Dumbledore's ancientness hints he's seen a LOT.", "emoji": "🏺"}, {"word": "Stiff", "category": "Descriptive Classics", "pronunciation": "STIF", "simple": "Rigid and unbending — hard to move, not flexible.", "example": "McGonagall sat stiff and upright on the wall.", "context": "McGonagall (as a cat AND as a person) is famously stiff and proper. Even as a cat she has posture.", "emoji": "🪑"}];
+
+// Deduplicate by word+category
+const seen = new Set();
+const WORDS = ALL_WORDS.filter(w => {
+  const key = w.word + "||" + w.category;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
+
+const CATEGORIES = ["All", ...new Set(WORDS.map(w => w.category))];
+
+document.getElementById("word-count").textContent = `Book 1 · Chapter 1 · ${WORDS.length} words`;
+
+// ─── STATE ───────────────────────────────────────────
+let mode = "cards";
+let cardIndex = 0;
+let cardFlipped = false;
+let cardsCat = "All";
+let browseCat = "All";
+
+// Quiz state
+let quizPool = [];
+let quizOpts = [];
+let quizIndex = 0;
+let quizScore = 0;
+let quizSelected = null;
+
+// ─── UTILS ───────────────────────────────────────────
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function filteredWords(cat) {
+  return cat === "All" ? WORDS : WORDS.filter(w => w.category === cat);
+}
+
+function makePills(containerId, activeCat, onSelect) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  CATEGORIES.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "cat-pill" + (c === activeCat ? " active" : "");
+    btn.textContent = c;
+    const cc = catColor(c);
+    if (c === activeCat) {
+      btn.style.background = cc;
+      btn.style.color = "#0a0f1e";
+      btn.style.borderColor = cc;
+    }
+    btn.onclick = () => onSelect(c);
+    container.appendChild(btn);
+  });
+}
+
+// ─── MODE SWITCHING ───────────────────────────────────
+function setMode(m) {
+  ["cards","browse","quiz"].forEach(id => {
+    document.getElementById("mode-" + id).classList.toggle("hidden", id !== m);
+  });
+  document.querySelectorAll(".tab").forEach((t,i) => {
+    t.classList.toggle("active", ["cards","browse","quiz"][i] === m);
+  });
+  mode = m;
+  if (m === "cards") renderCard();
+  if (m === "browse") renderBrowse();
+  if (m === "quiz") startQuiz();
+}
+
+// ─── FLASHCARDS ───────────────────────────────────────
+function renderCardPills() {
+  makePills("cat-pills-cards", cardsCat, (c) => {
+    cardsCat = c; cardIndex = 0; cardFlipped = false; renderCard();
+  });
+}
+
+function renderCard() {
+  renderCardPills();
+  const words = filteredWords(cardsCat);
+  const idx = Math.min(cardIndex, words.length - 1);
+  const w = words[idx];
+  if (!w) return;
+  const cc = catColor(w.category);
+
+  // Progress
+  const pct = Math.round(((idx + 1) / words.length) * 100);
+  document.getElementById("prog-bar").style.width = pct + "%";
+  document.getElementById("nav-count").textContent = `${idx + 1} / ${words.length}`;
+
+  // Badge
+  const badge = document.getElementById("card-badge");
+  badge.textContent = w.category;
+  badge.style.background = cc + "22";
+  badge.style.color = cc;
+  badge.style.border = `1px solid ${cc}44`;
+
+  // Card border color
+  const card = document.getElementById("flash-card");
+  card.style.borderColor = cardFlipped ? cc + "66" : "var(--border)";
+  card.style.boxShadow = cardFlipped ? `0 0 30px ${cc}22` : "0 8px 40px rgba(0,0,0,0.5)";
+
+  // Front
+  document.getElementById("card-emoji").textContent = w.emoji;
+  document.getElementById("card-word").textContent = w.word;
+  document.getElementById("card-word").style.color = cc;
+  document.getElementById("card-pron").textContent = w.pronunciation;
+  document.getElementById("card-simple").textContent = w.simple;
+
+  // Back
+  document.getElementById("back-block-1").style.background = cc + "11";
+  document.getElementById("back-block-1").style.borderLeft = `3px solid ${cc}`;
+  document.getElementById("back-label-1").style.color = cc;
+  document.getElementById("card-example").textContent = `"${w.example}"`;
+  document.getElementById("card-context").textContent = w.context;
+
+  // Flip state
+  document.getElementById("card-front").classList.toggle("hidden", cardFlipped);
+  document.getElementById("card-back").classList.toggle("hidden", !cardFlipped);
+  document.getElementById("flip-hint").textContent = cardFlipped ? "Tap to flip back" : "Tap to flip ✨";
+
+  // Buttons
+  const btn_next = document.getElementById("btn-next");
+  const btn_prev = document.getElementById("btn-prev");
+  btn_prev.disabled = idx === 0;
+  btn_next.disabled = idx === words.length - 1;
+  btn_next.style.background = idx === words.length - 1 ? "transparent" : `linear-gradient(135deg, ${cc}, var(--accent2))`;
+  btn_next.style.color = idx === words.length - 1 ? "var(--border)" : "#0a0f1e";
+}
+
+function flipCard() {
+  cardFlipped = !cardFlipped;
+  renderCard();
+}
+
+function navigate(dir) {
+  const words = filteredWords(cardsCat);
+  cardIndex = Math.max(0, Math.min(words.length - 1, cardIndex + dir));
+  cardFlipped = false;
+  renderCard();
+}
+
+// ─── BROWSE ───────────────────────────────────────────
+function renderBrowse() {
+  makePills("cat-pills-browse", browseCat, (c) => { browseCat = c; renderBrowse(); });
+  const words = filteredWords(browseCat);
+  document.getElementById("browse-count").textContent = words.length + " words";
+  const list = document.getElementById("browse-list");
+  list.innerHTML = "";
+  words.forEach(w => {
+    const cc = catColor(w.category);
+    const item = document.createElement("div");
+    item.className = "browse-item";
+    item.innerHTML = `
+      <div class="browse-emoji">${w.emoji}</div>
+      <div style="flex:1;min-width:0">
+        <div>
+          <span class="browse-word" style="color:${cc}">${w.word}</span>
+          <span class="browse-pron">${w.pronunciation}</span>
+        </div>
+        <div class="browse-simple">${w.simple}</div>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+// ─── QUIZ ─────────────────────────────────────────────
+function startQuiz() {
+  quizPool = shuffle(WORDS).slice(0, 10);
+  quizOpts = quizPool.map(q => {
+    const others = shuffle(WORDS.filter(w => w.word !== q.word || w.category !== q.category)).slice(0, 3);
+    return shuffle([...others, q]);
+  });
+  quizIndex = 0;
+  quizScore = 0;
+  quizSelected = null;
+  document.getElementById("quiz-screen").classList.remove("hidden");
+  document.getElementById("quiz-done").classList.add("hidden");
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const q = quizPool[quizIndex];
+  const cc = catColor(q.category);
+
+  const pct = Math.round((quizIndex / quizPool.length) * 100);
+  document.getElementById("quiz-prog").style.width = pct + "%";
+
+  const badge = document.getElementById("quiz-badge");
+  badge.textContent = q.category;
+  badge.style.background = cc + "22";
+  badge.style.color = cc;
+  badge.style.border = `1px solid ${cc}44`;
+
+  document.getElementById("quiz-num").textContent = `Q${quizIndex + 1} of ${quizPool.length}`;
+  document.getElementById("quiz-word").textContent = q.emoji + " " + q.word;
+  document.getElementById("quiz-word").style.color = cc;
+  document.getElementById("quiz-pron").textContent = q.pronunciation;
+
+  const opts = document.getElementById("quiz-opts");
+  opts.innerHTML = "";
+  quizOpts[quizIndex].forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-opt";
+    btn.textContent = opt.simple;
+    btn.onclick = () => pickQuiz(opt, btn);
+    opts.appendChild(btn);
+  });
+}
+
+function pickQuiz(opt, btn) {
+  if (quizSelected) return;
+  quizSelected = opt.word + opt.category;
+  const q = quizPool[quizIndex];
+  const isCorrect = opt.word === q.word && opt.category === q.category;
+  if (isCorrect) quizScore++;
+
+  document.querySelectorAll(".quiz-opt").forEach((b, i) => {
+    const o = quizOpts[quizIndex][i];
+    const correct = o.word === q.word && o.category === q.category;
+    const selected = o.word + o.category === quizSelected;
+    if (correct) b.classList.add("correct");
+    else if (selected) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+
+  setTimeout(() => {
+    quizSelected = null;
+    quizIndex++;
+    if (quizIndex >= quizPool.length) showQuizDone();
+    else renderQuiz();
+  }, 1000);
+}
+
+function showQuizDone() {
+  document.getElementById("quiz-screen").classList.add("hidden");
+  document.getElementById("quiz-done").classList.remove("hidden");
+  const pct = Math.round((quizScore / quizPool.length) * 100);
+  document.getElementById("done-icon").textContent = pct >= 80 ? "🏆" : pct >= 60 ? "⭐" : "📚";
+  document.getElementById("done-score").innerHTML = `<span style="color:var(--accent2);font-weight:700">${quizScore}</span> / <span style="color:var(--accent2);font-weight:700">${quizPool.length}</span> correct`;
+  document.getElementById("done-msg").textContent = pct >= 80 ? "Outstanding! You practically wrote the book." : pct >= 60 ? "Good work — you're getting the hang of Rowling's style!" : "Keep going! The more you read, the more these stick.";
+}
+
+// ─── INIT ─────────────────────────────────────────────
+renderCard();
+</script>
+</body>
+</html>
