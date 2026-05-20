@@ -81,6 +81,37 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .done-score{font-size:18px;color:var(--text);margin-bottom:8px}
 .done-msg{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d0a1e;border:none;border-radius:14px;padding:12px 30px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+
+.speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: transform 0.15s, opacity 0.15s;
+  opacity: 0.7;
+  vertical-align: middle;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+.speak-btn:active { transform: scale(0.85); opacity: 1; }
+.speak-btn:hover { opacity: 1; }
+.word-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.example-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.example-row .back-text {
+  flex: 1;
+}
 </style>
 </head>
 <body>
@@ -110,14 +141,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="card-front" id="card-front">
         <div class="card-emoji" id="card-emoji"></div>
-        <div class="card-word" id="card-word"></div>
+        <div class="word-row">
+          <div class="card-word" id="card-word"></div>
+          <button class="speak-btn" id="speak-word-btn" onclick="event.stopPropagation();speak('')" title="Hear pronunciation">🔊</button>
+        </div>
         <div class="card-pron" id="card-pron"></div>
         <div class="card-simple" id="card-simple"></div>
       </div>
       <div class="card-back hidden" id="card-back">
         <div class="back-block" id="back-block-1">
           <div class="back-label" id="back-label-1">📖 In the Book</div>
-          <div class="back-text italic" id="card-example"></div>
+          <div class="example-row">
+            <div class="back-text italic" id="card-example"></div>
+            <button class="speak-btn" id="speak-example-btn" onclick="event.stopPropagation();speak('')" title="Hear example">🔊</button>
+          </div>
         </div>
         <div class="back-block" style="background:rgba(255,255,255,0.04);border-radius:10px">
           <div class="back-label" style="color:var(--accent2)">💡 Why Rowling Used This</div>
@@ -226,6 +263,8 @@ function render(){
   document.getElementById("back-block-1").style.borderLeft="3px solid "+col;
   document.getElementById("back-label-1").style.color=col;
   document.getElementById("card-example").textContent='"'+w.example+'"';
+  document.getElementById("speak-word-btn").onclick = function(e){ e.stopPropagation(); speak(w.word); };
+  document.getElementById("speak-example-btn").onclick = function(e){ e.stopPropagation(); speak(w.example); };
   document.getElementById("card-context").textContent=w.context;
   document.getElementById("card-front").classList.toggle("hidden",flipped);
   document.getElementById("card-back").classList.toggle("hidden",!flipped);
@@ -292,6 +331,17 @@ function done(){
   document.getElementById("done-score").innerHTML='<span style="color:var(--accent2);font-weight:700">'+qs+'</span> / <span style="color:var(--accent2);font-weight:700">'+qpool.length+'</span> correct';
   document.getElementById("done-msg").textContent=pct>=80?"Outstanding! Rowling would be impressed.":pct>=60?"Good work — Chapter 2 is yours!":"Keep studying — it all clicks with reading!";
 }
+
+function speak(text, rate=0.9) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = rate;
+  u.pitch = 1;
+  window.speechSynthesis.speak(u);
+}
+
 render();
 </script>
 </body>
