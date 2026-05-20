@@ -183,7 +183,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <span style="color:var(--muted);font-size:13px" id="quiz-num"></span>
         </div>
         <div class="quiz-label">What does this word mean?</div>
-        <div class="quiz-word" id="quiz-word"></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="quiz-word" id="quiz-word"></div>
+          <button class="speak-btn" id="speak-quiz-btn" onclick="event.stopPropagation();speak('')" title="Hear word">🔊</button>
+        </div>
         <div class="quiz-pron" id="quiz-pron"></div>
       </div>
       <div class="quiz-opts" id="quiz-opts"></div>
@@ -305,6 +308,7 @@ function renderQuiz(){
   document.getElementById("quiz-word").textContent=q.emoji+" "+q.word;
   document.getElementById("quiz-word").style.color=col;
   document.getElementById("quiz-pron").textContent=q.pronunciation;
+  document.getElementById("speak-quiz-btn").onclick=function(e){e.stopPropagation();speak(q.word)};
   const opts=document.getElementById("quiz-opts");opts.innerHTML="";
   qopts[qi].forEach(opt=>{
     const btn=document.createElement("button");
